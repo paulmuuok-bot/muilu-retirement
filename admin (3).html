@@ -1,0 +1,38 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Guest List · Patrick Muilu Retirement</title>
+<style>
+body{margin:0;font:16px/1.6 system-ui,sans-serif;background:#fffdf8;color:#2b2418;padding:24px}
+h1{color:#b8892b;margin:0 0 4px}.wrap{max-width:980px;margin:auto}
+input,button{font:inherit;padding:11px 14px;border-radius:10px;border:1.5px solid #ecdfc0}
+button{background:linear-gradient(135deg,#b8892b,#e0b84a);color:#fff;border:0;cursor:pointer;font-weight:600}
+.stats{display:flex;gap:14px;flex-wrap:wrap;margin:20px 0}.stats div{background:#fff;border:1px solid #ecdfc0;border-radius:14px;padding:14px 22px}
+.stats b{display:block;font-size:34px;color:#b8892b;line-height:1.1}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden}
+th{background:#f7ecd0;text-align:left}td,th{padding:10px 12px;border-bottom:1px solid #f1e6c8;font-size:14px;vertical-align:top}
+.sc{overflow-x:auto}#msg{color:#a33;min-height:24px}
+@media print{.noprint{display:none}}
+</style></head><body><div class="wrap">
+<h1>Guest List</h1><div style="color:#6f6552">Patrick Muilu Retirement · 19 November 2026</div>
+<div class="noprint" style="margin-top:18px"><input id="k" type="password" placeholder="Passcode"> <button id="go">VIEW GUESTS</button> <span id="msg"></span></div>
+<div id="out" hidden>
+<div class="stats"><div><b id="n1">0</b>Registrations</div><div><b id="n2">0</b>Total people attending</div></div>
+<div class="noprint" style="margin-bottom:12px"><input id="f" placeholder="Search name, phone or relationship..." style="width:min(360px,100%)"> <button id="csv">DOWNLOAD CSV</button> <button id="pr">PRINT</button></div>
+<div class="sc"><table><thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Relationship</th><th>Guests</th><th>Message</th><th>Registered</th></tr></thead><tbody id="tb"></tbody></table></div>
+</div>
+<script>
+const SHEET_URL="https://script.google.com/macros/s/AKfycbxzZ5Itx2Ho5rSe-RwaZQYK1_ayeJiNUdOqMIXFczdyY4HGy_VakKXzzjpP56sdptgM/exec";/* paste the SAME Apps Script web app URL used in index.html */
+let rows=[];const $=s=>document.querySelector(s);
+function draw(){const q=$("#f").value.toLowerCase();const tb=$("#tb");tb.textContent="";let n=0;
+rows.filter(r=>[r.name,r.phone,r.relationship].join(" ").toLowerCase().includes(q)).forEach((r,i)=>{const tr=tb.insertRow();
+[i+1,r.name,r.phone,r.relationship,r.guests,r.message,new Date(r.time).toLocaleString()].forEach(v=>tr.insertCell().textContent=v)});
+$("#n1").textContent=rows.length;$("#n2").textContent=rows.reduce((a,r)=>a+(Number(r.guests)||0),0)}
+$("#go").onclick=async()=>{$("#msg").textContent="Loading...";let res,txt;
+try{res=await fetch(SHEET_URL+"?key="+encodeURIComponent($("#k").value))}catch(e){$("#msg").textContent="Blocked by Google. In Apps Script: Deploy > Manage deployments > Edit > set 'Who has access' to Anyone > New version > Deploy.";return}
+txt=await res.text();let d;try{d=JSON.parse(txt)}catch(e){$("#msg").textContent="The script is the OLD version (no guest list code). Paste the latest apps-script.gs, then Deploy > Manage deployments > Edit > New version > Deploy.";return}
+if(d.error){$("#msg").textContent="Wrong passcode.";return}
+rows=d.rows;$("#msg").textContent="";$("#out").hidden=false;draw()};
+$("#f").oninput=draw;$("#pr").onclick=()=>print();
+$("#csv").onclick=()=>{const e=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+const c=["Name,Phone,Relationship,Guests,Message,Registered"].concat(rows.map(r=>[r.name,r.phone,r.relationship,r.guests,r.message,r.time].map(e).join(","))).join("\n");
+const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([c],{type:"text/csv"}));a.download="guest-list.csv";a.click()};
+</script></div></body></html>
